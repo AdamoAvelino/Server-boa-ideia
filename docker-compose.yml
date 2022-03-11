@@ -3,11 +3,33 @@ services:
   app-apache:
     build: ./core
     ports:
-      - "8080:8080"
+      - "8080:80"
     volumes:
       - ../core/code:/var/www/html
+      - ./core/.docker/apache/000-default.conf:/etc/apache2/sites-available/000-default.conf
     depends_on:
       - app-mysql
+  
+  service-kanban:
+    build: ./kanban
+    ports:
+      - "8081:80"
+    volumes:
+      - ../kanban:/var/www/html
+      - ./kanban/.docker/apache/000-default.conf:/etc/apache2/sites-available/000-default.conf
+    depends_on:
+      - kanban-mysql
+    
+  kanban-mysql:
+    image: mysql:5.7.22
+    command: --innodb-use-native-aio=0
+    ports:
+      - "3306"
+    volumes:
+      - "./kanban/.docker/dbdata:/var/lib/mysql"
+    environment:
+      MYSQL_DATABASE: banco
+      MYSQL_ROOT_PASSWORD: secret
 
   app-mysql:
     image: mysql:5.7.22
